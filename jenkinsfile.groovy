@@ -32,7 +32,7 @@ node{
         }
     }
     stage("Copy files from tmp to respective folders"){
-        sh "ssh ec2-user@${my_env} sudo cp /tmp/flaskex.service /etc/systemd/system"
+        sh "ssh ec2-user@${my_env} sudo cp /tmp/flaskex.service /etc/systemd/system/"
         sh "ssh ec2-user@${my_env} sudo cp -r /tmp/second/* /flaskex"
     }
     
