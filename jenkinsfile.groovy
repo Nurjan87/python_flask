@@ -9,6 +9,7 @@ node{
     stage("Create neccessary folders"){
         sh "ssh ec2-user@${my_env} mkdir -p /tmp/second"
         sh "ssh ec2-user@${my_env} sudo mkdir -p /flaskex"
+        sh "ssh ec2-user@${my_env} sudo touch /tmp/flaskex.service"
     }
     stage("Copy files to tmp"){
         sh "scp -r * ec2-user@${my_env}:/tmp/second"
