@@ -1,7 +1,7 @@
 node{
     properties([parameters([string(defaultValue: '18.219.84.148', description: 'IP of the host', name: 'my_env', trim: true)])])
     stage("Clone Repo"){
-        git "git@github.com:Nurjan87/stormpath-flask-sample.git"
+        git "git@github.com:Nurjan87/stormpath_paython.git"
     }
     stage("Clean tmp folder"){
         sh "ssh ec2-user@${my_env} rm -rf /tmp/*"   
