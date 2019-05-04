@@ -13,6 +13,9 @@ node{
     stage("Copy files to tmp"){
         sh "scp -r * ec2-user@${my_env}:/tmp/second"
     }
+    stage("Install Requirements"){
+        sh "ssh ec2-user@${my_env} sudo pip install -r /tmp/second/requirements.txt"
+    }
     stage("Creating a service"){
         try{
             sh "ssh ec2-user@${my_env} echo Description=flask >> /tmp/flaskex.service"
@@ -32,9 +35,7 @@ node{
         sh "ssh ec2-user@${my_env} sudo cp -r /tmp/flaskex.service /etc/systemd/system"
         sh "ssh ec2-user@${my_env} sudo cp -r /tmp/second/* /flaskex"
     }
-    stage("Install Rrequirements"){
-        sh "ssh ec2-user@${my_env} sudo pip install -r /tmp/second/requirements.txt"
-    }
+    
     stage("Run app"){
         sh "ssh ec2-user@${my_env} sudo systemctl start flaskex"
     }
