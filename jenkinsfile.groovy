@@ -4,8 +4,8 @@ node {
         git 'git@github.com:Nurjan87/Flaskex.git'
     }
     stage("Build application"){
-        
-        sh "scp -r * ec2-useer@${ENV}:/tmp"
+
+        sh "scp -r * ec2-user@${ENV}:/tmp"
         sh "ssh ec2-user@${ENV}  pip install -r /tmp/requirments.txt"
     }
     stage("App Run"){
