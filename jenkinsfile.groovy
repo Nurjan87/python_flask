@@ -1,47 +1,41 @@
 node{
-    properties([parameters([string(defaultValue: 'IP', description: 'Where to build e.g IP', name: 'ENV', trim: true)])])
-    stage("Clone repo"){
-        git 'git@github.com:Nurjan87/Flaskex.git'
-     }
-    stage("Remove /tmp content"){
-        sh "ssh ec2-user@${ENV} sudo rm -rf /tmp/*"
+    properties([parameters([string(defaultValue: '18.219.84.148', description: 'IP of the host', name: 'my_env', trim: true)])])
+    stage("Clone Repo"){
+        git "git@github.com:Nurjan87/stormpath-flask-sample.git"
     }
-    stage("Copy filese over"){
-        sh "scp -r * ec2-user@${ENV}:/tmp"
-        sh "ssh ec2-user@${ENV}  sudo pip install -r /tmp/requirements.txt"
+    stage("Clean tmp folder"){
+        sh "ssh ec2-user@${my_env} rm -rf /tmp/*"   
     }
-    stage("Create Folder"){        
-        sh "ssh ec2-user@${ENV} sudo mkdir -p /flaskex"
+    stage("Create neccessary folders"){
+        sh "ssh ec2-user@${my_env} mkdir -p /tmp/second"
+        sh "ssh ec2-user@${my_env} sudo mkdir -p /flaskex"
     }
-    // block to work on next 
-     stage("Write to a file"){
-        sh "ssh ec2-user@${ENV} echo [Unit] > /tmp/flaskex.service"
-        sh "ssh ec2-user@${ENV} echo After=network.target >> /tmp/flaskex.service"
-        sh "ssh ec2-user@${ENV} echo [Service] >> /tmp/flaskex.service"
-        sh "ssh ec2-user@${ENV} echo Type=simple >> /tmp/flaskex.service"
-        sh "ssh ec2-user@${ENV} echo ExecStart=/bin/python /flaskex/app.py  >> /tmp/flaskex.service"
-        sh "ssh ec2-user@${ENV} echo Restart=on-abort >> /tmp/flaskex.service"
-        sh "ssh ec2-user@${ENV} echo [Install] >> /tmp/flaskex.service"
-        sh "ssh ec2-user@${ENV} echo WantedBy=multi-user.target >> /tmp/flaskex.service"
+    stage("Copy files to tmp"){
+        sh "scp -r * ec2-user@${my_env}:/tmp/second"
     }
-
-    // block to work on next
-    stage("Copy to System"){
-        sh "ssh ec2-user@${ENV} sudo cp -r /tmp/flaskex.service /etc/systemd/system"
-    }    
-    stage("move files to /flaskex"){
-        sh "ssh ec2-user@${ENV} sudo cp -r /tmp/* /flaskex"{
-            try {
-                sh "ssh ec2-user@${ENV} sudo cp -r /tmp/*flaskex"
-            }
-            catch(err){
-                sh "eho did not copy"
-            }
+    stage("Creating a service"){
+        try{
+            sh "ssh ec2-user@${my_env} echo Description=flask >> /tmp/flaskex.service"
+            sh "ssh ec2-user@${my_env} echo After=network.target >> /tmp/flaskex.service"
+            sh "ssh ec2-user@${my_env} echo Type=simple >> /tmp/flaskex.service"
+            sh "ssh ec2-user@${my_env} echo 'ExecStart=/bin/python /flaskex/app.py'  >> /tmp/flaskex.service"
+            sh "ssh ec2-user@${my_env} echo Restart=on-abort >> /tmp/flaskex.service"
+            sh "ssh ec2-user@${my_env} echo [Install] >> /tmp/flaskex.service"
+            sh "ssh ec2-user@${my_env} echo WantedBy=multi-user.target >> /tmp/flaskex.service"
+        }
+        catch(err)
+        {
+            sh "echo errrrrrrrrrrror"
+        }
     }
-    stage("Install requiremennts"){
-        sh "ssh ec2-user@${ENV} sudo pip install -r /flaskex/requirements.txt"
+    stage("Copy files from tmp to respective folders"){
+        sh "ssh ec2-user@${my_env} sudo cp -r /tmp/flaskex.service /etc/systemd/system"
+        sh "ssh ec2-user@${my_env} sudo cp -r /tmp/second/* /flaskex"
     }
-    stage("App Run"){
-        sh "ssh ec2-user@${ENV} sudo  systemctl start flaskex"
+    stage("Install Rrequirements"){
+        sh "ssh ec2-user@${my_env} sudo pip install -r /tmp/second/requirements.txt"
+    }
+    stage("Run app"){
+        sh "ssh ec2-user@${my_env} sudo systemctl start flaskex"
     }
 }
